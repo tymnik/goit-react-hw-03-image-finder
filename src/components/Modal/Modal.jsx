@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import styles from './Modal.module.css'
+import styles from './Modal.module.css';
 
 const Modal = ({ imageUrl, altText, onClose }) => {
   const handleKeyDown = event => {
@@ -22,7 +22,7 @@ const Modal = ({ imageUrl, altText, onClose }) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('click', handleClickOutside);
     };
-  }, [onClose]);
+  }, [onClose, handleKeyDown, handleClickOutside]);
 
   return (
     <div className={styles.overlay}>
