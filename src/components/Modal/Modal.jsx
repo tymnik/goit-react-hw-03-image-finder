@@ -3,7 +3,7 @@ import styles from './Modal.module.css';
 
 const Modal = ({ imageUrl, altText, onClose }) => {
   const handleKeyDown = useCallback(
-    event => {
+    (event) => {
       if (event.key === 'Escape') {
         onClose();
       }
@@ -12,8 +12,9 @@ const Modal = ({ imageUrl, altText, onClose }) => {
   );
 
   const handleClickOutside = useCallback(
-    event => {
-      if (event.target.classList.contains('overlay')) {
+    (event) => {
+      const modal = document.querySelector(`.${styles.modal}`);
+      if (event.target.classList.contains(styles.overlay) || (modal && modal.contains(event.target))) {
         onClose();
       }
     },
