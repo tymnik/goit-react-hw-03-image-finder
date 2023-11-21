@@ -16,7 +16,7 @@ const ImageGalleryItem = ({ src, alt }) => {
   return (
     <>
       <li className={styles.galleryItem} onClick={openModal}>
-        <img src={src} alt={alt} />
+        <img className={styles.imageGalleryItem} src={src} alt={alt} />
       </li>
       {isModalOpen && (
         <Modal imageUrl={src} altText={alt} onClose={closeModal} />

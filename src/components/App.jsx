@@ -14,43 +14,42 @@ const App = () => {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [loadMore, setLoadMore] = useState(true); 
+  const [loadMore, setLoadMore] = useState(true);
 
-useEffect(() => {
-  const fetchImages = async () => {
-    try {
-      setIsLoading(true);
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        setIsLoading(true);
 
-      const response = await fetch(
-        `https://pixabay.com/api/?q=${searchTerm}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`
-      );
+        const response = await fetch(
+          `https://pixabay.com/api/?q=${searchTerm}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`
+        );
 
-      if (!response.ok) {
-        throw new Error('Error fetching images from Pixabay API');
+        if (!response.ok) {
+          throw new Error('Error fetching images from Pixabay API');
+        }
+
+        const data = await response.json();
+        const newImages = data.hits.map(hit => ({
+          id: hit.id,
+          webformatURL: hit.webformatURL,
+          largeImageURL: hit.largeImageURL,
+        }));
+
+        setImages(prevImages => [...prevImages, ...newImages]);
+        setLoadMore(page < Math.ceil(data.totalHits / perPage));
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      const data = await response.json();
-      const newImages = data.hits.map(hit => ({
-        id: hit.id,
-        webformatURL: hit.webformatURL,
-        largeImageURL: hit.largeImageURL,
-      }));
-
-      setImages(prevImages => [...prevImages, ...newImages]);
-      setLoadMore(page < Math.ceil(data.totalHits / perPage));
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+    if (page !== 1 || searchTerm !== '') {
+      setImages([]);
+      fetchImages();
     }
-  };
-
-  if (page !== 1 || searchTerm !== '') {
-    setImages([]);
-    fetchImages();
-  }
-}, [searchTerm, page]);
-
+  }, [searchTerm, page]);
 
   const handleSearchSubmit = newSearchTerm => {
     setSearchTerm(newSearchTerm);
@@ -72,7 +71,7 @@ useEffect(() => {
     <div>
       <SearchBar onSubmit={handleSearchSubmit} />
       <ImageGallery images={images} openModal={openModal} />
-      <Button onClick={loadMoreImages} isVisible={images.length > 0} />
+      <Button onClick={loadMoreImages} loadMore={loadMore} />
       {isLoading && <Loader />}
       {selectedImage && (
         <Modal
