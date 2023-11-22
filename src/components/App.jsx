@@ -21,7 +21,7 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { searchTerm, page } = this.state;
+    const { searchTerm } = this.state;
 
     if (prevState.searchTerm !== searchTerm) {
       this.setState({ images: [], page: 1 }, () => {
