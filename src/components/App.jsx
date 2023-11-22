@@ -1,4 +1,3 @@
-// App.jsx
 import React, { Component } from 'react';
 import SearchBar from './SearchBar/SearchBar';
 import ImageGallery from './ImageGallery/ImageGallery';
@@ -7,20 +6,15 @@ import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      apiKey: '39819981-fb7a960ba48529567676f3c81',
-      perPage: 12,
-      images: [],
-      searchTerm: '',
-      page: 1,
-      isLoading: false,
-      selectedImage: null,
-      loadMore: true,
-    };
-  }
+  state = {
+    apiKey: '39819981-fb7a960ba48529567676f3c81',
+    perPage: 12,
+    images: [],
+    searchTerm: '',
+    page: 1,
+    isLoading: false,
+    selectedImage: null,
+  };
 
   componentDidMount() {
     this.fetchImages();
@@ -29,8 +23,8 @@ class App extends Component {
   componentDidUpdate(prevProps, prevState) {
     const { searchTerm, page } = this.state;
 
-    if (prevState.page !== page || prevState.searchTerm !== searchTerm) {
-      this.setState({ images: [] }, () => {
+    if (prevState.searchTerm !== searchTerm) {
+      this.setState({ images: [], page: 1 }, () => {
         this.fetchImages();
       });
     }
@@ -59,7 +53,6 @@ class App extends Component {
 
       this.setState(prevState => ({
         images: [...prevState.images, ...newImages],
-        loadMore: page < Math.ceil(data.totalHits / perPage),
       }));
     } catch (error) {
       console.error(error);
@@ -69,11 +62,16 @@ class App extends Component {
   };
 
   handleSearchSubmit = newSearchTerm => {
-    this.setState({ searchTerm: newSearchTerm });
+    this.setState({ searchTerm: newSearchTerm, images: [], page: 1 });
   };
 
   loadMoreImages = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+    this.setState(
+      prevState => ({ page: prevState.page + 1 }),
+      () => {
+        this.fetchImages();
+      }
+    );
   };
 
   openModal = image => {
@@ -85,13 +83,15 @@ class App extends Component {
   };
 
   render() {
-    const { images, isLoading, selectedImage, loadMore } = this.state;
+    const { images, isLoading, selectedImage } = this.state;
 
     return (
       <div>
         <SearchBar onSubmit={this.handleSearchSubmit} />
         <ImageGallery images={images} openModal={this.openModal} />
-        <Button onClick={this.loadMoreImages} loadMore={loadMore} />
+        {images.length > 0 && (
+          <Button onClick={this.loadMoreImages} loadMore={true} />
+        )}
         {isLoading && <Loader />}
         {selectedImage && (
           <Modal

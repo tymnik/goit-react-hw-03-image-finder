@@ -2,13 +2,9 @@ import React, { Component } from 'react';
 import styles from './SearchBar.module.css';
 
 class SearchBar extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      inputValue: '',
-    };
-  }
+  state = {
+    inputValue: '',
+  };
 
   handleInputChange = event => {
     this.setState({ inputValue: event.target.value });
