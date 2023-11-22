@@ -1,43 +1,44 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { Component } from 'react';
 import styles from './Modal.module.css';
 
-const Modal = ({ imageUrl, altText, onClose }) => {
-  const handleKeyDown = useCallback(
-    (event) => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
+class Modal extends Component {
+  componentDidMount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('click', this.handleClickOutside);
+  }
 
-  const handleClickOutside = useCallback(
-    (event) => {
-      const modal = document.querySelector(`.${styles.modal}`);
-      if (event.target.classList.contains(styles.overlay) || (modal && modal.contains(event.target))) {
-        onClose();
-      }
-    },
-    [onClose]
-  );
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener('click', this.handleClickOutside);
+  }
 
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    document.addEventListener('click', handleClickOutside);
+  handleKeyDown = event => {
+    if (event.key === 'Escape') {
+      this.props.onClose();
+    }
+  };
 
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [handleKeyDown, handleClickOutside]);
+  handleClickOutside = event => {
+    const modal = document.querySelector(`.${styles.modal}`);
+    if (
+      event.target.classList.contains(styles.overlay) ||
+      (modal && modal.contains(event.target))
+    ) {
+      this.props.onClose();
+    }
+  };
 
-  return (
-    <div className={styles.overlay}>
-      <div className={styles.modal}>
-        <img src={imageUrl} alt={altText} />
+  render() {
+    const { imageUrl, altText } = this.props;
+
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.modal}>
+          <img src={imageUrl} alt={altText} />
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default Modal;

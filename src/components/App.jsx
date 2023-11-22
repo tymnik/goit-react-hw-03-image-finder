@@ -1,87 +1,108 @@
-import React, { useState, useEffect } from 'react';
+// App.jsx
+import React, { Component } from 'react';
 import SearchBar from './SearchBar/SearchBar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 
-const App = () => {
-  const apiKey = '39819981-fb7a960ba48529567676f3c81';
-  const perPage = 12;
+class App extends Component {
+  constructor(props) {
+    super(props);
 
-  const [images, setImages] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [loadMore, setLoadMore] = useState(true);
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        setIsLoading(true);
-
-        const response = await fetch(
-          `https://pixabay.com/api/?q=${searchTerm}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`
-        );
-
-        if (!response.ok) {
-          throw new Error('Error fetching images from Pixabay API');
-        }
-
-        const data = await response.json();
-        const newImages = data.hits.map(hit => ({
-          id: hit.id,
-          webformatURL: hit.webformatURL,
-          largeImageURL: hit.largeImageURL,
-        }));
-
-        setImages(prevImages => [...prevImages, ...newImages]);
-        setLoadMore(page < Math.ceil(data.totalHits / perPage));
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
+    this.state = {
+      apiKey: '39819981-fb7a960ba48529567676f3c81',
+      perPage: 12,
+      images: [],
+      searchTerm: '',
+      page: 1,
+      isLoading: false,
+      selectedImage: null,
+      loadMore: true,
     };
+  }
 
-    if (page !== 1 || searchTerm !== '') {
-      setImages([]);
-      fetchImages();
+  componentDidMount() {
+    this.fetchImages();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { searchTerm, page } = this.state;
+
+    if (prevState.page !== page || prevState.searchTerm !== searchTerm) {
+      this.setState({ images: [] }, () => {
+        this.fetchImages();
+      });
     }
-  }, [searchTerm, page]);
+  }
 
-  const handleSearchSubmit = newSearchTerm => {
-    setSearchTerm(newSearchTerm);
+  fetchImages = async () => {
+    const { apiKey, perPage, searchTerm, page } = this.state;
+
+    try {
+      this.setState({ isLoading: true });
+
+      const response = await fetch(
+        `https://pixabay.com/api/?q=${searchTerm}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`
+      );
+
+      if (!response.ok) {
+        throw new Error('Error fetching images from Pixabay API');
+      }
+
+      const data = await response.json();
+      const newImages = data.hits.map(hit => ({
+        id: hit.id,
+        webformatURL: hit.webformatURL,
+        largeImageURL: hit.largeImageURL,
+      }));
+
+      this.setState(prevState => ({
+        images: [...prevState.images, ...newImages],
+        loadMore: page < Math.ceil(data.totalHits / perPage),
+      }));
+    } catch (error) {
+      console.error(error);
+    } finally {
+      this.setState({ isLoading: false });
+    }
   };
 
-  const loadMoreImages = () => {
-    setPage(prevPage => prevPage + 1);
+  handleSearchSubmit = newSearchTerm => {
+    this.setState({ searchTerm: newSearchTerm });
   };
 
-  const openModal = image => {
-    setSelectedImage(image);
+  loadMoreImages = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
-  const closeModal = () => {
-    setSelectedImage(null);
+  openModal = image => {
+    this.setState({ selectedImage: image });
   };
 
-  return (
-    <div>
-      <SearchBar onSubmit={handleSearchSubmit} />
-      <ImageGallery images={images} openModal={openModal} />
-      <Button onClick={loadMoreImages} loadMore={loadMore} />
-      {isLoading && <Loader />}
-      {selectedImage && (
-        <Modal
-          imageUrl={selectedImage.largeImageURL}
-          altText={selectedImage.id}
-          onClose={closeModal}
-        />
-      )}
-    </div>
-  );
-};
+  closeModal = () => {
+    this.setState({ selectedImage: null });
+  };
+
+  render() {
+    const { images, isLoading, selectedImage, loadMore } = this.state;
+
+    return (
+      <div>
+        <SearchBar onSubmit={this.handleSearchSubmit} />
+        <ImageGallery images={images} openModal={this.openModal} />
+        <Button onClick={this.loadMoreImages} loadMore={loadMore} />
+        {isLoading && <Loader />}
+        {selectedImage && (
+          <Modal
+            imageUrl={selectedImage.largeImageURL}
+            altText={selectedImage.id}
+            onClose={this.closeModal}
+          />
+        )}
+      </div>
+    );
+  }
+}
 
 export default App;

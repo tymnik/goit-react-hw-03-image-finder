@@ -1,28 +1,61 @@
-import React, { useState } from 'react';
+import React, { Component } from 'react';
 import Modal from '../Modal/Modal';
-import styles from './ImageGalleryItem.module.css'
+import styles from './ImageGalleryItem.module.css';
 
-const ImageGalleryItem = ({ src, alt }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const openModal = () => {
-    setIsModalOpen(true);
+class ImageGalleryItem extends Component {
+  state = {
+    isModalOpen: false,
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
+  openModal = () => {
+    this.setState({ isModalOpen: true });
   };
 
-  return (
-    <>
-      <li className={styles.galleryItem} onClick={openModal}>
-        <img className={styles.imageGalleryItem} src={src} alt={alt} />
-      </li>
-      {isModalOpen && (
-        <Modal imageUrl={src} altText={alt} onClose={closeModal} />
-      )}
-    </>
-  );
-};
+  closeModal = () => {
+    this.setState({ isModalOpen: false });
+  };
+
+  componentDidMount() {
+    document.addEventListener('keydown', this.handleKeyDown);
+    document.addEventListener('click', this.handleClickOutside);
+  }
+
+  componentWillUnmount() {
+    document.removeEventListener('keydown', this.handleKeyDown);
+    document.removeEventListener('click', this.handleClickOutside);
+  }
+
+  handleKeyDown = event => {
+    if (event.key === 'Escape') {
+      this.closeModal();
+    }
+  };
+
+  handleClickOutside = event => {
+    const modal = document.querySelector(`.${styles.modal}`);
+    if (
+      event.target.classList.contains(styles.overlay) ||
+      (modal && modal.contains(event.target))
+    ) {
+      this.closeModal();
+    }
+  };
+
+  render() {
+    const { src, alt } = this.props;
+    const { isModalOpen } = this.state;
+
+    return (
+      <>
+        <li className={styles.galleryItem} onClick={this.openModal}>
+          <img className={styles.imageGalleryItem} src={src} alt={alt} />
+        </li>
+        {isModalOpen && (
+          <Modal imageUrl={src} altText={alt} onClose={this.closeModal} />
+        )}
+      </>
+    );
+  }
+}
 
 export default ImageGalleryItem;
