@@ -89,7 +89,7 @@ class App extends Component {
       <div>
         <SearchBar onSubmit={this.handleSearchSubmit} />
         <ImageGallery images={images} openModal={this.openModal} />
-        {images.length > 0 && (
+        {images.length > 0 && images.length % 12 === 0 && (
           <Button onClick={this.loadMoreImages} loadMore={true} />
         )}
         {isLoading && <Loader />}
